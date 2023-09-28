@@ -1,6 +1,6 @@
 # GSGEN: Text-to-3D using Gaussian Splatting
 
-This repository contains the official implementation of [GSGEN: Text-to-3D using Gaussian Splattijg](https://gsgen3d.github.io). 
+This repository contains the official implementation of [GSGEN: Text-to-3D using Gaussian Splattng](https://gsgen3d.github.io). 
 
 ### Video results
 
