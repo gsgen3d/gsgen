@@ -1,0 +1,23 @@
+num_poses: 64
+batch_size: 8
+epoch: 10
+use_cache: True
+reso: 256
+log_period: 5
+
+loss:
+  sds: 0.0
+  rgb: 100.0
+
+optimizer:
+  type: "Adam"
+  opt_args:
+    eps: 1e-15
+
+lr:
+  mean: 5e-3
+  svec: 6e-3
+  qvec: 3e-3
+  color: 1e-2
+  alpha: 1e-2
+  bg: 3e-3

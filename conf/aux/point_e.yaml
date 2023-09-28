@@ -1,0 +1,16 @@
+# @package aux
+
+enabled: False
+type: "point_e"
+device: ${device}
+base_name: "base40M-textvec"
+weighting_strategy: "sds"
+guidance_scale: 100
+scheduler_type: "original"
+batch_size: 4
+min_step_percent: 0.02
+max_step_percent: 0.98
+mean_only: True
+normalize: False
+
+grad_clip: null

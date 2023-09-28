@@ -1,0 +1,21 @@
+
+device: "cuda:0"
+batch_size: 128
+max_steps: 1000
+
+center: [0.0, 0.0, 0.0]
+center_aug_std: 0.0
+
+azimuth: [-180, 180]
+azimuth_warmup: 0
+elevation: [-10, 90]
+elevation_warmup: 0
+elevation_real_uniform: True
+camera_distance: [2.5, 2.5]
+focal: [0.5, 1.5]
+
+reso: [512]
+reso_milestones: []
+
+near_plane: 0.01
+far_plane: 100.0

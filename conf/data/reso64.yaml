@@ -1,0 +1,22 @@
+# @package data
+
+device: ${device}
+batch_size: ${batch_size}
+max_steps: ${max_steps}
+
+center: [0.0, 0.0, 0.0]
+center_aug_std: 0.05
+
+azimuth: [-180, 180]
+azimuth_warmup: 0
+elevation: [-20, 90]
+elevation_real_uniform: True
+elevation_warmup: 0
+camera_distance: [2.5, 2.5]
+focal: [0.7, 1.35]
+
+reso: [64]
+reso_milestones: []
+
+near_plane: 0.01
+far_plane: 100.0

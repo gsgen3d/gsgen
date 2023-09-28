@@ -1,0 +1,19 @@
+# @package guidance
+
+type: "deep_floyd"
+max_steps: ${max_steps}
+device: ${device}
+
+pretrained_model_name_or_path: "DeepFloyd/IF-I-XL-v1.0"
+repeat_until_success: True
+half_precision_weights: True
+use_view_dependent_prompt: True
+enable_attention_slicing: False
+use_upsample_model: True
+
+guidance_scale: 20.0
+weighting_strategy: "sds"
+min_step_percent: 0.02
+max_step_percent: 0.98
+
+grad_clip: null

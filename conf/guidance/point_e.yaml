@@ -1,0 +1,23 @@
+# @package guidance
+
+device: ${device}
+base_name: "base40M"
+weighting_strategy: "sds"
+guidance_scale: 3.0
+scheduler_type: "original"
+batch_size: 1
+min_t_percent: 0.02
+max_t_percent: 0.98
+ckpt: null 
+xyz_init_scale: 1.0
+
+save_period: 2000
+
+xyz_lr: 1e-5
+rgb_lr: 1e-5
+max_steps_mult: 1.5
+final_lr_mult: 1e-2
+
+image_path: null
+
+viewer: True

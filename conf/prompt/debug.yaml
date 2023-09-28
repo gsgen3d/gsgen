@@ -1,0 +1,19 @@
+# @package prompt
+
+type: "deep_floyd"
+device: "cuda"
+pretrained_model_name_or_path: "DeepFloyd/IF-I-XL-v1.0"
+
+prompt: "Michelangelo style statue of dog reading news on a cellphone"
+negative_prompt: ""
+overhead_threshold: 60.0
+front_threshold: 45.0
+back_threshold: 45.0
+use_cache: True
+use_view_dependent_prompt: False
+view_dependent_prompt_front: False
+
+use_perp_negative: False
+use_prompt_debiasing: False
+
+debug: False

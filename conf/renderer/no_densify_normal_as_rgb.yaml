@@ -1,0 +1,56 @@
+# @package renderer
+
+device: "${device}"
+
+tile_size: 16
+frustum_culling_radius: 6.0
+tile_culling_type: aabb
+tile_culling_thresh: 0.01
+tile_culling_radius: 6.0
+T_thresh: 0.0001
+skip_frustum_culling: False
+normal_as_rgb: True
+normal:
+  neighborhood_size: 30
+  disambiguate_directions: True
+debug: False
+
+svec_act: "exp"
+alpha_act: "sigmoid"
+color_act: "sigmoid"
+
+depth_detach: True
+
+background:
+  type: random
+  device: ${device}
+  range: [0.0, 1.0]
+  random_aug: False
+  random_aug_prob: 0.0
+  color: [0.0, 0.0, 0.0]
+
+densify:
+  enabled: False
+  type: "official"
+  warm_up: 2000
+  end: 4999
+  period: 500
+  mean2d_thresh: 0.02
+  split_thresh: 0.01
+  n_splits: 2
+  split_shrink: 0.8
+  use_legacy: False
+
+prune:
+  enabled: True
+  warm_up: 0
+  end: ${max_steps}
+  period: 100
+  radii2d_thresh: 10
+  alpha_thresh: 0.05
+  radii3d_thresh: 0.1
+
+penalty:
+  alpha:
+    type: "center_weighted"
+    value: 0.0

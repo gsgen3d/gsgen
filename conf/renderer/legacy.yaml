@@ -1,0 +1,186 @@
+# debug
+debug: False
+timing: False
+
+# system
+mode: train_and_eval
+device: cuda:0
+eval_iteration: 1000
+eval_type: mipnerf
+
+# data
+downsample: 1
+save_iteration: 500
+log_iteration: 50
+num_points: 100e3
+
+# train
+use_train_sample: False
+ema: 0.9
+
+bounds: 1.5
+
+# renderer
+tile_size: 16
+near_plane: 0.01
+far_plane: 5.0
+frustum_culling_radius: 10.0
+tile_culling_type: aabb
+tile_culling_thresh: 0.01
+tile_culling_radius: 6.0
+bg: False
+random_bg: True
+bg_rgb: [0.0, 0.0, 0.0]
+skip_frustum_culling: False
+
+# model
+svec_init_method: fixed
+nearest_k: 3
+random_init: False
+max_iteration: 8001
+lr: 1e-2
+alpha_init: 0.5
+svec_init: 0.02
+loss_fn: l1
+T_thresh: 0.0001 # early stop threshold for transmitance
+ssim_loss_mult: 0.2 
+ssim_loss_win_size: 11
+
+# spherical harmonics
+sh_order: 1
+sh_upgrades: []
+
+# activation functions
+alpha_act: sigmoid
+svec_act: exp
+
+# gaussian adaptive control
+adapt_ctrl_enabled: False
+warm_up: 3000
+adapt_ctrl_end: 100000000
+adaptive_control_iteration: 400
+pos_grad_thresh: 0.0002
+scale_shrink_factor: 1.6
+alpha_reset_period: 100000000
+remove_low_alpha_period: 10000000
+alpha_reset_val: 0.02
+alpha_thresh: 0.021
+split_scale_thresh: 0.02
+cum_grad: False
+split_type: 2d_mean_grad
+split_reduction: mean
+svec_thresh: 50
+remove_large_period: 101
+world_large_threhs: 40
+alpha_init_method: fixed
+
+# wandb
+wandb: False
+
+# viewer config
+viewer: False
+viewer_port: 1234
+
+# tests
+only_forward: False
+
+# lrs
+mean_lr: 5e-2
+qvec_lr: 3e-3
+svec_lr: 3e-3
+sh_coeffs_lr: 3e-3
+alpha_lr: 3e-3
+
+mean_lr_end: 3e-5
+qvec_lr_end: 3e-4
+svec_lr_end: 3e-3
+sh_coeffs_lr_end: 3e-4
+alpha_lr_end: 3e-4
+
+mean_scheduler: exp
+qvec_scheduler: nothing
+svec_scheduler: nothing
+sh_coeffs_scheduler: nothing
+alpha_scheduler: nothing
+
+warmup_steps: 0
+
+# misc
+comment: ""
+
+# from checkpoint
+from_ckpt: False
+ckpt_path: a/b/c
+start_epoch: 500
+vis_grad_thresh: 0.0
+
+diffusion_model: "stablediffusion"
+sd_version: "1-5"
+num_init_pts: 10e3
+init_pts_std: 1.0
+init_pts_bounds: 2.0
+default_reso: 256
+guidance_scale: 100
+
+batch_size: 8
+opt: "adam"
+# opt_args:
+#   betas: [0.9, 0.99]
+
+camera_pose_provider:
+  center: [0.0, 0.0, 0.0]
+  center_jittor_std: 0.05
+  vrot_range: [0, 90]
+  hrot_range: [0, 360]
+  radius_range: [2.5, 2.5]
+  up: [0.0, 0.0, 1.0]
+  focal_range: [0.7, 1.35]
+  real_uniform: True
+  horizontal_warmup: 0
+
+loss:
+  sds_loss_mult: 1.0
+  alpha_loss_type: "center_weighted"
+  alpha_loss_mult: 0.01
+
+init_method: "random"
+
+point_e:
+  prompt: ""
+  scale: 1.0
+
+# prompts
+prompt: "a high quality photo of a pineapple"
+top_prompt: ", overhead view"
+side_prompt: ", side view"
+front_prompt: ", front view"
+back_prompt: ", back view"
+positional_prompting: "discrete"
+
+# grad clips
+grad_clip:
+  mean: null
+  svec: null
+  qvec: null
+  sh_coeffs: null
+  alpha: null
+  
+
+split:
+  enabled: False
+  warm_up: 3000
+  period: 1000
+  end: 6000
+
+remove:
+  enabled: False
+  alpha_thresh: 0.01 ## remove gaussians whose alpha lower than
+  period: 1000
+
+remove_small:
+  enabled: False
+  min_scale: 0.005
+  period: 1000
+
+regularizer:
+  svec_small: 0.0
