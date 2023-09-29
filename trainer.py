@@ -163,10 +163,10 @@ class Trainer(nn.Module):
         self.renderer.setup_lr(cfg.lr)
         self.renderer.set_optimizer(cfg.optimizer)
 
-        if self.cfg.aux.enabled:
-            self.aux_guidance = get_guidance(cfg.aux)
+        if self.cfg.auxiliary.enabled:
+            self.aux_guidance = get_guidance(cfg.auxiliary)
             self.aux_guidance.set_text(
-                self.cfg.aux.get("prompt", self.cfg.prompt.prompt)
+                self.cfg.auxiliary.get("prompt", self.cfg.prompt.prompt)
             )
 
         self.guidance = get_guidance(cfg.guidance)
@@ -456,7 +456,7 @@ class Trainer(nn.Module):
         return loss
 
     def aux_guidance_step(self):
-        if self.cfg.aux.enabled:
+        if self.cfg.auxiliary.enabled:
             aux_guidance_loss = self.aux_guidance(self.renderer)
             self.writer.add_scalar("loss/aux_guidance", aux_guidance_loss, self.step)
             loss = (
