@@ -173,7 +173,7 @@ renderer:
     alpha:
       type: center_weighted
       value: 0.0
-aux:
+auxiliary:
   enabled: false
   type: point_e
   device: ${device}
