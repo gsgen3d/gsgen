@@ -38,7 +38,7 @@ if cub_home is None:
         "`CUB_HOME` to the folder containing the `CMakeListst.txt` file."
     )
 else:
-    # include_dirs.append(os.path.realpath(cub_home).replace("\\ ", " "))
+    include_dirs.append(os.path.realpath(cub_home).replace("\\ ", " "))
     pass
 
 if os.name == "posix":
