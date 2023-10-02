@@ -43,6 +43,13 @@ python main.py --config-name=base prompt.prompt="<prompt>" init.prompt="<point-e
 ```
 
 ### Viewer
+#### splat viewer
+We support [splat](https://github.com/antimatter15/splat) viewer now !
+Click the captions of text-to-3D results in our project page to watch the assets in a WebGL based viwer.
+[Example: a pineapple](https://gsgen3d.github.io/viewer.html?url=A_zoomed_out_DSLR_photo_of_DSLR_photo_of_a_pineapple.splat).
+This great viewer achieves > 40 FPS on my MacBook with M1 pro chip.
+
+#### viser based viewer (Visualize checkpoints on your own computer)
 Start the Viewer by:
 ```python
 python vis.py <path-to-ckpt> --port <port>
@@ -53,4 +60,6 @@ This code base is built upon the following awesome open-source projects:
 [Stable DreamFusion](https://github.com/ashawkey/stable-dreamfusion)
 [threestudio](https://github.com/threestudio-project/threestudio)
 [3D Gaussian Splatting](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/)
+[splat](https://github.com/antimatter15/splat)
+[Point-E](https://github.com/openai/point-e/issues)
 Thanks the authors for their remarkable job !
