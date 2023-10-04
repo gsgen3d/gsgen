@@ -44,6 +44,7 @@ else:
 if os.name == "posix":
     c_flags = ["-O3", "-std=c++14", "-g"]
 elif os.name == "nt":
+    nvcc_flags.append("-DWIN32_LEAN_AND_MEAN")
     c_flags = ["/O2", "/std:c++17"]
 
     # find cl.exe
