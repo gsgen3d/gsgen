@@ -2,7 +2,10 @@
 
 This repository contains the official implementation of [GSGEN: Text-to-3D using Gaussian Splattng](https://gsgen3d.github.io). 
 
-[Paper](https://arxiv.org/abs/2309.16585) | [Project Page](https://gsgen3d.github.io/)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1kg8OOnVXSnnEIk9IYBg55ZqkPfMh14xf?usp=sharing)
+
+
+### [Paper](https://arxiv.org/abs/2309.16585) | [Project Page](https://gsgen3d.github.io/)
 
 ### Video results
 
