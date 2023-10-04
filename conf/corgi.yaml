@@ -1,0 +1,195 @@
+device: cuda
+batch_size: 4
+grad_accum: 1
+max_steps: 15000
+huggingface_offline: true
+use_bg: true
+rgb_only: false
+optimizer:
+  type: Adam
+  opt_args:
+    eps: 1.0e-15
+lr:
+  mean:
+  - 0.005
+  - 3.0e-05
+  - ${max_steps}
+  - exp
+  svec:
+  - 0.003
+  - 0.001
+  - ${max_steps}
+  - exp
+  qvec: 0.003
+  color: 0.01
+  alpha: 0.003
+  bg: 0.003
+init:
+  type: point_e
+  prompt: a corgi
+  num_points: 4096
+  mean_std: 1.0
+  svec_val: 0.02
+  alpha_val: 0.8
+  random_color: true
+  facex: true
+eval:
+  image_period: 100
+  video_period: 500
+  elevation: 45
+  n_frames: 30
+  n_circles: 1
+  save_format: mp4
+  downsample: 1
+loss:
+  sds: 0.1
+  aux_guidance: 0.01
+  sparsity: 0.0
+  opague: 0.0
+  z_var: 0.0
+  depth_prior: 0.0
+estimators:
+  depth:
+    enabled: false
+    value: 0.0
+  normal:
+    enabled: false
+    value: 0.0
+log_period: 100
+save_period: 2000
+wandb: true
+notes: ''
+data:
+  device: ${device}
+  batch_size: ${batch_size}
+  max_steps: ${max_steps}
+  center:
+  - 0.0
+  - 0.0
+  - 0.0
+  center_aug_std: 0.05
+  azimuth:
+  - -180
+  - 180
+  azimuth_warmup: 0
+  elevation:
+  - -20
+  - 90
+  elevation_real_uniform: true
+  elevation_warmup: 0
+  camera_distance:
+  - 2.5
+  - 2.5
+  focal:
+  - 0.75
+  - 1.35
+  focal_milestones: null
+  reso:
+  - 512
+  reso_milestones: []
+  near_plane: 0.01
+  far_plane: 100.0
+  stratified_on_azimuth: true
+guidance:
+  type: stable_diffusion
+  max_steps: ${max_steps}
+  device: ${device}
+  pretrained_model_name_or_path: runwayml/stable-diffusion-v1-5
+  keep_complete_pipeline: false
+  repeat_until_success: true
+  half_precision_weights: true
+  use_view_dependent_prompt: true
+  enable_attention_slicing: false
+  scheduler:
+    type: ddim
+    args: null
+  guidance_scale: 100.0
+  weighting_strategy: sds
+  min_step_percent:
+  - 0
+  - 0.2
+  - 0.98
+  - 2001
+  - sqrt
+  max_step_percent:
+  - 0
+  - 0.2
+  - 0.98
+  - 2001
+  - sqrt
+  grad_clip: null
+prompt:
+  type: stable_diffusion
+  device: ${guidance.device}
+  pretrained_model_name_or_path: ${guidance.pretrained_model_name_or_path}
+  prompt: A high quality photo of a furry corgi
+  negative_prompt: ''
+  overhead_threshold: 60.0
+  front_threshold: 45.0
+  back_threshold: 45.0
+  use_cache: true
+  use_view_dependent_prompt: true
+  view_dependent_prompt_front: false
+  use_perp_negative: false
+  use_prompt_debiasing: false
+  debug: false
+renderer:
+  device: ${device}
+  tile_size: 16
+  frustum_culling_radius: 6.0
+  tile_culling_type: aabb
+  tile_culling_thresh: 0.01
+  tile_culling_radius: 6.0
+  T_thresh: 0.0001
+  skip_frustum_culling: false
+  normal_as_rgb: false
+  debug: false
+  svec_act: exp
+  alpha_act: sigmoid
+  color_act: sigmoid
+  depth_detach: true
+  background:
+    type: random
+    device: ${device}
+    range:
+    - 0.0
+    - 1.0
+    random_aug: false
+    random_aug_prob: 0.0
+  densify:
+    enabled: true
+    type: official
+    warm_up: 2000
+    end: 9999
+    period: 1000
+    mean2d_thresh: 0.02
+    split_thresh: 0.02
+    n_splits: 2
+    split_shrink: 0.8
+    use_legacy: true
+  prune:
+    enabled: false
+    warm_up: 0
+    end: 0
+    radii2d_thresh: 1000
+    alpha_thresh: 1000
+    radii3d_thresh: 0.0
+    period: 500
+  penalty:
+    alpha:
+      type: center_weighted
+      value: 0.0
+aux:
+  enabled: true
+  type: point_e
+  device: ${device}
+  base_name: base40M-textvec
+  weighting_strategy: sds
+  guidance_scale: 100
+  scheduler_type: original
+  batch_size: 4
+  min_step_percent: 0.02
+  max_step_percent: 0.98
+  mean_only: true
+  normalize: false
+  grad_clip: null

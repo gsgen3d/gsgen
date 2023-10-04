@@ -6,3 +6,5 @@ def get_num_runs(project_name=""):
         return len(wandb.Api().runs(project_name))
     except ValueError:
         return 0
+    except:
+        return 1
