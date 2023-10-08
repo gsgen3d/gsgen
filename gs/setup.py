@@ -38,12 +38,13 @@ if cub_home is None:
         "`CUB_HOME` to the folder containing the `CMakeListst.txt` file."
     )
 else:
-    # include_dirs.append(os.path.realpath(cub_home).replace("\\ ", " "))
+    include_dirs.append(os.path.realpath(cub_home).replace("\\ ", " "))
     pass
 
 if os.name == "posix":
     c_flags = ["-O3", "-std=c++14", "-g"]
 elif os.name == "nt":
+    nvcc_flags.append("-DWIN32_LEAN_AND_MEAN")
     c_flags = ["/O2", "/std:c++17"]
 
     # find cl.exe
