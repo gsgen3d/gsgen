@@ -82,6 +82,11 @@ python utils/export.py <your_ckpt> --type mesh --batch_size 65536 --reso 256 --K
 ```
 where the <your_ckpt> can be the path to the .pt checkpoint file or, more conveniently, can be the id for the run (the display name of the run in wandb, e.g. `0|213630|2023-10-11|a_high_quality_photo_of_a_corgi`). The exported files are reside in the `exports/<export-type>`.
 
+#### If you encounter troubles in exporting in colab, using `-m` will work:
+```bash
+python -m utils.export <your_ckpt> --type <export_type>
+```
+
 ## Updates
 - [2023-10-08] Now support exports to `.ply` and `.splat` files. Mesh exporting are coming soon.
 - [2023-10-13] Now support Shap-E initialize, try it with `init.type="shap_e"`
