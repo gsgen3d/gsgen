@@ -123,3 +123,5 @@ vedo
 timm==0.9.5
 torchmetrics==1.1.1
 clip @ git+https://github.com/openai/CLIP.git@a1d071733d7111c9c014f024669f959182114e33
+blobfile==2.1.0
+ipywidgets==8.1.1

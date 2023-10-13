@@ -167,6 +167,67 @@ def point_e_intialize(cfg):
     return initial_values
 
 
+def shap_e_initialize(cfg):
+    from utils.shap_e_helper import shap_e_generate_pcd_from_text
+
+    prompt = cfg.prompt
+    pcd = shap_e_generate_pcd_from_text(prompt)
+    xyz, rgb = pcd[:, :3], pcd[:, 3:]
+
+    # if cfg.num_points > 4096:
+    #     if cfg.get("random_exceed", False):
+    #         indices = torch.randint(
+    #             0, xyz.size(0), (cfg.num_points,), device=xyz.device
+    #         )
+    #         xyz = xyz[indices]
+    #         rgb = rgb[indices]
+    #     else:
+    #         extra_xyz = (
+    #             torch.randn(
+    #                 cfg.num_points - 4096, 3, dtype=torch.float32, device=xyz.device
+    #             )
+    #             * cfg.mean_std
+    #         )
+    #         extra_rgb = torch.rand(
+    #             cfg.num_points - 4096, 3, dtype=torch.float32, device=rgb.device
+    #         )
+    #         xyz = torch.cat([xyz, extra_xyz], dim=0)
+    #         rgb = torch.cat([rgb, extra_rgb], dim=0)
+
+    xyz -= xyz.mean(dim=0, keepdim=True)
+
+    xyz = xyz / (xyz.norm(dim=-1).max() + 1e-5)
+    xyz = xyz * cfg.mean_std
+
+    if cfg.get("facex", False):
+        # align the point cloud to the x axis
+        console.print("[red]will align the point cloud to the x axis")
+        x, y, z = xyz.chunk(3, dim=-1)
+        xyz = torch.cat([-y, x, z], dim=-1)
+
+    if cfg.get("random_color", False):
+        console.print("[red]will use random color")
+        rgb = torch.rand_like(rgb)
+
+    if cfg.get("white_color", False):
+        console.print("[red]will make all the gaussians white, for experimental usage")
+        rgb = torch.ones_like(rgb) * 0.7
+
+    z_scale = cfg.get("z_scale", 1.0)
+    xyz[..., 2] *= z_scale
+    cfg.num_points = xyz.shape[0]
+
+    initial_values = {}
+    initial_values["mean"] = xyz
+    initial_values["color"] = rgb
+    # breakpoint()
+    initial_values["svec"] = get_svec(cfg)
+    initial_values["qvec"] = get_qvec(cfg)
+    initial_values["alpha"] = get_alpha(cfg)
+
+    return initial_values
+
+
 # moved to utils/debug.py
 # def debug_initialize(debug_flag):
 #     initial_values = {}
@@ -429,6 +490,8 @@ def initialize(cfg, **kwargs):
         return unisphere_initialize(cfg)
     elif init_type == "point_e":
         return point_e_intialize(cfg)
+    elif init_type == "shap_e":
+        return shap_e_initialize(cfg)
     elif init_type == "ckpt":
         return from_ckpt(cfg)
     elif init_type == "image":

@@ -4,19 +4,24 @@ import torch
 import struct
 from pathlib import Path
 from gs.gaussian_splatting import GaussianSplattingRenderer
-from utils.ops import K_nearest_neighbors
+from utils.ops import K_nearest_neighbors, marching_cubes
 from utils.ckpt import get_ckpt_path
+from utils.transforms import qsvec2covmat_batched
 from plyfile import PlyData, PlyElement
+from einops import repeat
+from tqdm import tqdm, trange
+from functools import partial
 
 from rich.console import Console
 
 console = Console()
 
 
-def get_densify_val_grid(
+def get_density_val_grid(
     renderer: GaussianSplattingRenderer,
+    batch_size: int = 256,
     L: float = -1.0,
-    reso: int = 256,
+    reso: int = 128,
     K: int = 3,
 ):
     if L < 0.0:
@@ -30,9 +35,124 @@ def get_densify_val_grid(
 
     mean = renderer.mean
 
-    _, nn_idx = K_nearest_neighbors(grid, mean, K=K)
+    # _, nn_idx, dist = K_nearest_neighbors(grid, mean, K=K, return_dist=True)
 
-    densify_val_grid = torch.zeros_like(grid[..., :1])
+    density_val_grid = torch.zeros_like(grid[..., :1])
+
+    num_grid_points = grid.shape[0]
+    for start in range(0, num_grid_points, batch_size):
+        end = min(start + batch_size, num_grid_points)
+        num_this_batch = end - start
+        pos = grid[start:end]
+        _, nn_idx, dist = K_nearest_neighbors(pos, mean, K=K + 1, return_dist=True)
+        nn_idx = nn_idx.reshape(-1)
+        mean_batch = mean[nn_idx]
+        cov_batch = renderer.cov[nn_idx]
+
+        pos = repeat(pos, "b d -> b n d", n=K).reshape(-1, 3)
+
+        # check where is the transpose should be
+        density = (
+            torch.exp(-0.5 * (pos - mean_batch) @ cov_batch @ (pos - mean_batch).T)
+            .reshape(num_this_batch, K)
+            .sum(axis=-1)
+        )
+
+        density_val_grid[start:end] = density.reshape(num_this_batch, 1)
+
+    return density_val_grid.reshape(reso, reso, reso)
+
+
+def get_density_val_grid_from_ckpt(
+    ckpt: dict,
+    batch_size: int = 256,
+    L: float = -1.0,
+    reso: int = 128,
+    K: int = 3,
+):
+    if L < 0.0:
+        L = ckpt["mean"].abs().max().item() * 1.1
+    x = torch.linspace(-L, L, reso)
+    y = torch.linspace(-L, L, reso)
+    z = torch.linspace(-L, L, reso)
+
+    x, y, z = torch.meshgrid(x, y, z)
+    grid = torch.stack([x.reshape(-1), y.reshape(-1), z.reshape(-1)], dim=-1)
+
+    mean = ckpt["mean"]
+    cov = qsvec2covmat_batched(ckpt["qvec"], torch.exp(ckpt["svec"]))
+    cov_inv = torch.inverse(cov)
+    opacity = torch.sigmoid(ckpt["alpha"])
+
+    density_val_grid = torch.zeros_like(grid[..., :1])
+
+    num_grid_points = grid.shape[0]
+    for start in trange(0, num_grid_points, batch_size):
+        end = min(start + batch_size, num_grid_points)
+        num_this_batch = end - start
+        pos = grid[start:end]
+        _, nn_idx, dist = K_nearest_neighbors(
+            mean, query=pos, K=K + 1, return_dist=True
+        )
+        nn_idx = nn_idx.reshape(-1)
+        mean_batch = mean[nn_idx]
+        cov_inv_batch = cov_inv[nn_idx]
+        opacity_batch = opacity[nn_idx]
+
+        pos = repeat(pos, "b d -> b n d", n=K).reshape(-1, 3) - mean_batch
+        # check where is the transpose should be
+        density = (
+            (
+                opacity_batch
+                * torch.exp(
+                    -0.5
+                    * torch.bmm(
+                        torch.bmm(pos[..., None, :], cov_inv_batch), pos[..., None]
+                    )
+                ).squeeze()
+            )
+            .reshape(num_this_batch, K)
+            .sum(axis=-1)
+        )
+
+        density_val_grid[start:end] = density.reshape(num_this_batch, 1)
+
+    return density_val_grid.reshape(reso, reso, reso), L
+
+
+def to_mesh(
+    ckpt_path, save_dir, device="cuda", reso=128, K=3, batch_size=256, thresh=0.5
+):
+    torch.set_default_device(device)
+    ckpt_path = get_ckpt_path(ckpt_path)
+    if ckpt_path is None:
+        console.print(f"[red]ckpt not found: {ckpt_path}[/red]")
+        return
+    ckpt = torch.load(ckpt_path, map_location=device)
+    cfg = ckpt["cfg"]
+    prompt = cfg["prompt"]["prompt"].replace(" ", "_")
+
+    if "params" in ckpt:
+        ckpt = ckpt["params"]
+
+    density_val_grid, L = get_density_val_grid_from_ckpt(
+        ckpt,
+        reso=reso,
+        K=K,
+        batch_size=batch_size,
+    )
+    density_val_grid = density_val_grid.cpu().numpy()
+    print(np.min(density_val_grid))
+    print(np.max(density_val_grid))
+    # TODO: finish this
+    import mcubes
+
+    save_dir = Path(save_dir) / "obj"
+    if not save_dir.exists():
+        save_dir.mkdir(parents=True, exist_ok=True)
+
+    vertices, triangles = marching_cubes(density_val_grid, L, reso, thresh)
+    mcubes.export_obj(vertices, triangles, str(save_dir / f"{prompt}.obj"))
 
 
 def to_ply(ckpt_path, save_dir):
@@ -169,6 +289,11 @@ if __name__ == "__main__":
     parser.add_argument("ckpt", type=str)
     parser.add_argument("--type", type=str, default="ply")
     parser.add_argument("--save_dir", type=str, default="./exports")
+    parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--reso", type=int, default=128)
+    parser.add_argument("--K", type=int, default=3)
+    parser.add_argument("--batch_size", type=int, default=256)
+    parser.add_argument("--thresh", type=float, default=0.5)
 
     opt = parser.parse_args()
     func = None
@@ -177,6 +302,15 @@ if __name__ == "__main__":
         func = to_ply
     elif opt.type == "splat":
         func = to_splat
+    elif opt.type == "mesh":
+        func = partial(
+            to_mesh,
+            device=opt.device,
+            reso=opt.reso,
+            K=opt.K,
+            batch_size=opt.batch_size,
+            thresh=opt.thresh,
+        )
     else:
         raise NotImplementedError(f"Unknown export type: {opt.type}")
 

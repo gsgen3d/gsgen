@@ -184,3 +184,4 @@ sweep/
 *.mp4
 *.mov
 exports/
+shap_e_model_cache/

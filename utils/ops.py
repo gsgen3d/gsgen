@@ -116,16 +116,22 @@ def nearest_neighbor(mean: torch.Tensor):
 
 @torch.no_grad()
 def K_nearest_neighbors(
-    mean: torch.Tensor, K: int, query: Optional[torch.Tensor] = None
+    mean: torch.Tensor,
+    K: int,
+    query: Optional[torch.Tensor] = None,
+    return_dist=False,
 ):
     if not pytorch3d_capable:
         raise ImportError("pytorch3d is not installed, which is required for KNN")
     # TODO: finish this
     if query is None:
         query = mean
-    _, idx, nn = knn_points(query[None, ...], mean[None, ...], K=K, return_nn=True)
+    dist, idx, nn = knn_points(query[None, ...], mean[None, ...], K=K, return_nn=True)
 
-    return nn[0, :, 1:, :], idx[0, :, 1:]
+    if not return_dist:
+        return nn[0, :, 1:, :], idx[0, :, 1:]
+    else:
+        return nn[0, :, 1:, :], idx[0, :, 1:], dist[0, :, 1:]
 
 
 def distance_to_gaussian_surface(mean, svec, rotmat, query):
@@ -187,3 +193,15 @@ def compute_shaded_color(
     dot = (ab * surface_normal).sum(dim=-1).abs().clamp(min=0.0, max=1.0)
 
     return light_color * dot[..., None] * surface_color
+
+
+def marching_cubes(density_grid, L, reso, thresh):
+    try:
+        import mcubes
+    except ImportError:
+        raise ImportError(
+            "mcubes is not installed, which is required for marching cubes\nInstall it by `pip install PyMCubes`"
+        )
+    vertices, triangles = mcubes.marching_cubes(density_grid, thresh)
+
+    return vertices, triangles

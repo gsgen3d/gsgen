@@ -34,9 +34,7 @@ def qvec2rotmat(qvec):
 def qsvec2rotmat_batched(
     qvec: TensorType["N", 4], svec: TensorType["N", 3]
 ) -> TensorType["N", 3, 3]:
-    unscaled_rotmat = quaternion_to_rotation_matrix(
-        qvec, QuaternionCoeffOrder.WXYZ
-    )
+    unscaled_rotmat = quaternion_to_rotation_matrix(qvec, QuaternionCoeffOrder.WXYZ)
 
     # TODO: check which I current think that scale should be copied row-wise since in eq (6) the S matrix is right-hand multplied to R
     rotmat = svec.unsqueeze(-2) * unscaled_rotmat
@@ -49,12 +47,13 @@ def qsvec2rotmat_batched(
 
 
 def rotmat2wxyz(rotmat):
-    return rotation_matrix_to_quaternion(
-        rotmat, order=QuaternionCoeffOrder.WXYZ
-    )
+    return rotation_matrix_to_quaternion(rotmat, order=QuaternionCoeffOrder.WXYZ)
 
 
 def qvec2rotmat_batched(qvec: TensorType["N", 4]):
-    return quaternion_to_rotation_matrix(
-        qvec, QuaternionCoeffOrder.WXYZ
-    )
+    return quaternion_to_rotation_matrix(qvec, QuaternionCoeffOrder.WXYZ)
+
+
+def qsvec2covmat_batched(qvec: TensorType["N", 4], svec: TensorType["N", 3]):
+    rotmat = qsvec2rotmat_batched(qvec, svec)
+    return torch.bmm(rotmat, rotmat.transpose(-1, -2))

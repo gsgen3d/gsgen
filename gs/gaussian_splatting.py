@@ -122,6 +122,27 @@ class GaussianSplattingRenderer(torch.nn.Module):
     def color(self):
         return self.color_act(self.color_before_activation)
 
+    @svec.setter
+    def svec(self, value):
+        if value.shape == self.svec_before_activation.shape:
+            self.svec_before_activation.data = self.svec_inv_act(value)
+        else:
+            self.svec_before_activation = nn.Parameter(self.svec_inv_act(value.data))
+
+    @alpha.setter
+    def alpha(self, value):
+        if value.shape == self.alpha_before_activation.shape:
+            self.alpha_before_activation.data = self.alpha_inv_act(value)
+        else:
+            self.alpha_before_activation = nn.Parameter(self.alpha_inv_act(value.data))
+
+    @color.setter
+    def color(self, value):
+        if value.shape == self.color_before_activation.shape:
+            self.color_before_activation.data = self.color_inv_act(value)
+        else:
+            self.color = nn.Parameter(self.color_inv_act(value.data))
+
     @property
     def principal_axis(self):
         return qvec2rotmat_batched(self.qvec)
@@ -717,6 +738,10 @@ class GaussianSplattingRenderer(torch.nn.Module):
 
         # return int(torch.sum(mask).item())
 
+    def densify_by_shrink_then_compatness(self, shrink_factor: float, K: int = 3):
+        self.svec = self.svec / shrink_factor
+        return self.densify_by_compatness(K=K)
+
     def densify_by_all(self):
         # densify all gaussians
         return self.densify_by_split(
@@ -733,7 +758,12 @@ class GaussianSplattingRenderer(torch.nn.Module):
         if step_check(step, self.densify_cfg.period, True):
             if self.densify_cfg.use_legacy:
                 self.densify_legacy(step, verbose)
-                if "compatness" in self.densify_cfg.type:
+                if "shrink_then_compatness" in self.densify_cfg.type:
+                    self.densify_by_shrink_then_compatness(
+                        self.densify_cfg.get("surface_shrink", 1.5),
+                        K=self.densify_cfg.get("K", 3),
+                    )
+                elif "compatness" in self.densify_cfg.type:
                     self.densify_by_compatness(K=self.densify_cfg.get("K", 3))
             else:
                 grads = self.mean_2d_grad_accum / self.cnt
@@ -774,6 +804,11 @@ class GaussianSplattingRenderer(torch.nn.Module):
                             f"Step {step}| {self.N} gaussians remaining ... | num_split: {num_new_gaussians} | densify type: {self.densify_cfg.type}",
                             style="magenta",
                         )
+                elif self.densify_cfg.type == "shrink_then_compatness":
+                    num_new_gaussians = self.densify_by_shrink_then_compatness(
+                        self.densify_cfg.get("surface_shrink", 1.5),
+                        K=self.densify_cfg.get("K", 3),
+                    )
                 else:
                     raise NotImplementedError(
                         f"Unknown densify type: {self.densify_cfg.type}"
