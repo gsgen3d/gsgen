@@ -89,7 +89,7 @@ where the <your_ckpt> can be the path to the .pt checkpoint file or, more conven
 ### TODO
 - [ ] Support full mesh export. (Coming soon)  
 - [ ] Support [VSD loss](https://github.com/thu-ml/prolificdreamer). (The VSD code is already done, further tuning is on the way)
-- [ ] Support more guidance, e.g. [zero123](https://zero123.cs.columbia.edu/), [make-it-3d](https://github.com/junshutang/Make-It-3D), etc.
+- [ ] Support more guidance, e.g. [zero123](https://zero123.cs.columbia.edu/), [make-it-3d](https://github.com/junshutang/Make-It-3D), [ControlNet Openpose](https://github.com/mhussar/Controlnet3DCharacterRotation/tree/main), etc.
 
 
 ## Acknowledgement
