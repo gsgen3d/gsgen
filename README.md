@@ -107,4 +107,4 @@ This code base is built upon the following awesome open-source projects:
 - [Shap-E](https://github.com/openai/shap-e)
 - [Make-it-3D](https://github.com/junshutang/Make-It-3D)
 
-Thanks the authors for their remarkable job !
+Thank the authors for their remarkable job !
