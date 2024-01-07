@@ -229,7 +229,7 @@ class StableDiffusionGuidance(BaseGuidance):
 
             # perform guidance (high scale from paper!)
             noise_pred_text, noise_pred_uncond = noise_pred.chunk(2)
-            noise_pred = noise_pred_text + self.cfg.guidance_scale * (
+            noise_pred = noise_pred_uncond + self.cfg.guidance_scale * (
                 noise_pred_text - noise_pred_uncond
             )
 
